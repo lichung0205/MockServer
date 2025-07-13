@@ -1,0 +1,23 @@
+# 編譯後的 Java 類別檔
+*.class
+
+# 執行過程產生的 log 或暫存檔
+*.log
+
+# VSCode 設定（若團隊不需要共用）
+.vscode/
+
+# macOS 系統隱藏檔案
+.DS_Store
+
+# Windows 系統隱藏檔案
+Thumbs.db
+desktop.ini
+
+# IDEA (如果有人用 IntelliJ IDEA)
+.idea/
+*.iml
+
+# 其他 Java 專案可能產生的東西
+bin/
+out/
