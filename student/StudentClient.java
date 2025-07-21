@@ -1,19 +1,13 @@
-package gmtools;
-
-// public class GmToolsApp {
-
-//     public static void main(String[] args) {
-//         System.out.println("GMTools 已啟動！");
-//     }
-// }
+package student;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class GmToolsApp {
+public class StudentClient {
     private static final String SERVER_IP = "127.0.0.1";
     private static final int SERVER_PORT = 9527;
+    private static final String studentName = "28號同學";
     private static Socket socket;
     private static PrintWriter out;
     private static BufferedReader in;
@@ -59,7 +53,7 @@ public class GmToolsApp {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             // 送出身份識別
-            out.println("TEACHER:Neil");
+            out.println("STUDENT:" + studentName);
             System.out.println("已連接到伺服器: " + SERVER_IP + ":" + SERVER_PORT);
         } catch (IOException e) {
             System.err.println("連接伺服器失敗: " + e.getMessage());
@@ -84,17 +78,17 @@ public class GmToolsApp {
     // 顯示功能選單並依使用者輸入進行相對動作
     private static void showMenu(Scanner scanner) {
         System.out.println("\n===== 功能選單 =====");
-        System.out.println("1. 廣播");
-        System.out.println("2. 統計人數");
+        System.out.println("1. 喝水");
+        System.out.println("2. 滑手機");
         System.out.println("q. 離開");
         System.out.print("請選擇功能: ");
         String choice = scanner.nextLine().trim().toLowerCase();
         switch (choice) {
             case "1":
-                out.println("REQUEST_BROADCAST");
+                out.println("REQUEST_DRINK");
                 break;
             case "2":
-                out.println("REQUEST_COUNT");
+                out.println("REQUEST_PHONE");
                 break;
             case "q":
                 out.println("QUIT");
