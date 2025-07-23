@@ -56,6 +56,7 @@ public class ClassroomServer {
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
                 String showStr = "";
+                int studentId = 0;
                 String input;
                 while ((input = in.readLine()) != null) {
                     // 根據收到的請求做相對應的處理
