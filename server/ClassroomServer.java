@@ -5,6 +5,8 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
+import common.Message;
+
 public class ClassroomServer {
     private static final int PORT = 9527;
     private static ServerSocket serverSocket;
@@ -137,6 +139,65 @@ public class ClassroomServer {
                 try {
                     socket.close();
                 } catch (IOException e) {
+                }
+            }
+        }
+    }
+
+    // 導師處理器 (改用Message 傳送 接收)
+    static class TeacherHandlerNew implements Runnable {
+        private final Socket socket;
+        private PrintWriter out;
+        private BufferedReader in;
+
+        public TeacherHandlerNew(Socket socket) {
+            this.socket = socket;
+        }
+
+        public void run() {
+            try {
+                out = new PrintWriter(socket.getOutputStream(), true);
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                String input;
+                while ((input = in.readLine()) != null) {
+                    // 根據收到的請求做相對應的處理
+                    Message msg = Message.fromJson(input);
+                    switch (msg.getType()) {
+                        // 廣播
+                        case "broadcast":
+                            // 廣播訊息
+                            String broadcastMsg = msg.getContent();
+                            // 廣播給所有學生
+                            for (StudentHandler student : students) {
+                                student.sendMessage("[廣播] " + broadcastMsg);
+                            }
+                            out.println("老師您的廣播訊息已發送給在場所有學生");
+                            break;
+                        case "count":
+                            out.println("目前教室學生人數：" + students.size());
+                            break;
+                        case "find":
+                            out.println("尋找學生中....");
+                            break;
+                        case "quit":
+                            for (StudentHandler student : students) {
+                                student.sendMessage("[廣播] 導師 已離開教室 ");
+                            }
+                            System.out.println("導師 已離開教室");
+                            break;
+                        default:
+                            out.println("未知指令");
+                    }
+                }
+            } catch (IOException e) {
+                System.out.println("老師連線異常中斷");
+            } finally {
+                // teachers.remove(this);
+                System.out.println("導師連線已關閉，已從教室移除");
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    System.err.println("關閉導師 socket 發生錯誤: " + e.getMessage());
                 }
             }
         }

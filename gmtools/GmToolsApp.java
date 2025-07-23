@@ -1,14 +1,11 @@
 package gmtools;
 
-// public class GmToolsApp {
-//     public static void main(String[] args) {
-//         System.out.println("GMTools 已啟動！");
-//     }
-// }
-
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
+
+import common.Message;
 
 public class GmToolsApp {
     private static final String SERVER_IP = "127.0.0.1";
@@ -17,11 +14,11 @@ public class GmToolsApp {
     private static PrintWriter out;
     private static BufferedReader in;
     private static boolean running = true;
-    private static boolean actionEnd = true; // 動作結束
 
     public static void main(String[] args) {
         try {
             initializeConnection();
+            AtomicLong speakTime = new AtomicLong(System.currentTimeMillis());
 
             // 啟動專門接收 server 消息的執行緒
             new Thread(() -> {
@@ -30,6 +27,7 @@ public class GmToolsApp {
                     while ((serverMessage = in.readLine()) != null) {
                         // Server返回消息
                         System.out.println("\n" + serverMessage);
+                        speakTime.set(System.currentTimeMillis()); // 安全地更新值
                     }
                 } catch (IOException e) {
                     System.out.println("與伺服器連線中斷");
@@ -39,8 +37,12 @@ public class GmToolsApp {
             Scanner scanner = new Scanner(System.in);
             // 主迴圈：持續顯示選單
             while (running) {
-                // 收完回應才顯示菜單
-                showMenu(scanner);
+                long diffTime = System.currentTimeMillis() - speakTime.get(); // 安全地讀取值
+                // 三秒都沒回訊息才顯示菜單
+                if (diffTime > 5000) {
+                    showMenu(scanner);
+                    speakTime.set(System.currentTimeMillis()); // 安全地更新值
+                }
             }
 
             // 離開前關閉連線
@@ -82,28 +84,48 @@ public class GmToolsApp {
         }
     }
 
+    // 統一由這來發送
+    private static void doAction(Message message) {
+        out.println(message.toJson());
+    }
+
     // 顯示功能選單並依使用者輸入進行相對動作
     private static void showMenu(Scanner scanner) {
-
-        if (!actionEnd)
-            return;
 
         System.out.println("\n===== 功能選單 =====");
         System.out.println("1. 廣播");
         System.out.println("2. 統計人數");
+        System.out.println("3. 請同學來找老師");
+        System.out.println("4. 留話給學員");
         System.out.println("q. 離開");
         System.out.print("請選擇功能: ");
+        String target = "";
+        String content = "";
         // 用輸入功能卡迴圈循環
         String choice = scanner.nextLine().trim().toLowerCase();
         switch (choice) {
             case "1":
-                out.println("REQUEST_BROADCAST");
+                System.out.println("請輸入要廣播的訊息");
+                content = scanner.nextLine().trim();
+                doAction(new Message("broadcast", target, content));
                 break;
             case "2":
-                out.println("REQUEST_COUNT");
+                doAction(new Message("count", target, content));
+                break;
+            case "3":
+                System.out.println("請輸入您要尋找的學員代號");
+                target = scanner.nextLine().trim().toLowerCase();
+                doAction(new Message("find", target, content));
+                break;
+            case "4":
+                System.out.println("請輸入學員代號");
+                target = scanner.nextLine().trim().toLowerCase();
+                System.out.println("請輸入您想傳達的訊息");
+                content = scanner.nextLine().trim();
+                doAction(new Message("find", target, content));
                 break;
             case "q":
-                out.println("QUIT");
+                doAction(new Message("quit", target, content));
                 break;
             default:
                 System.out.println("無效的選擇，請重新輸入");
