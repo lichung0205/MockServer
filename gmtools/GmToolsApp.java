@@ -1,7 +1,6 @@
 package gmtools;
 
 // public class GmToolsApp {
-
 //     public static void main(String[] args) {
 //         System.out.println("GMTools 已啟動！");
 //     }
@@ -18,6 +17,7 @@ public class GmToolsApp {
     private static PrintWriter out;
     private static BufferedReader in;
     private static boolean running = true;
+    private static boolean actionEnd = true; // 動作結束
 
     public static void main(String[] args) {
         try {
@@ -39,6 +39,7 @@ public class GmToolsApp {
             Scanner scanner = new Scanner(System.in);
             // 主迴圈：持續顯示選單
             while (running) {
+                // 收完回應才顯示菜單
                 showMenu(scanner);
             }
 
@@ -83,11 +84,16 @@ public class GmToolsApp {
 
     // 顯示功能選單並依使用者輸入進行相對動作
     private static void showMenu(Scanner scanner) {
+
+        if (!actionEnd)
+            return;
+
         System.out.println("\n===== 功能選單 =====");
         System.out.println("1. 廣播");
         System.out.println("2. 統計人數");
         System.out.println("q. 離開");
         System.out.print("請選擇功能: ");
+        // 用輸入功能卡迴圈循環
         String choice = scanner.nextLine().trim().toLowerCase();
         switch (choice) {
             case "1":
@@ -98,10 +104,10 @@ public class GmToolsApp {
                 break;
             case "q":
                 out.println("QUIT");
-                running = false;
                 break;
             default:
                 System.out.println("無效的選擇，請重新輸入");
         }
+
     }
 }
