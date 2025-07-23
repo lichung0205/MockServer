@@ -21,3 +21,6 @@ desktop.ini
 # 其他 Java 專案可能產生的東西
 bin/
 out/
+
+# 
+.metadata/
