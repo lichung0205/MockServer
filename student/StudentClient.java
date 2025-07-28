@@ -1,70 +1,130 @@
 package student;
-// 引入 IOException
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
+import java.util.concurrent.TimeUnit;
 
-public class StudentClient {
+public class StudentClient implements Runnable {
 
     private static final String SERVER_IP = "127.0.0.1";
     private static final int SERVER_PORT = 9527;
-    private static final String studentName = "28號同學";
-    private static Socket socket;
-    private static PrintWriter out;
-    private static BufferedReader in;
-    private static boolean running = true;
 
-    public static void main(String[] args) {
+    private String clientStudentName;
+    private int clientAttendanceStatus; // 0 代表未到, 1 代表簽到
+    private int clientActivityChoice;   // 新增：儲存活動選擇
+
+    private Socket socket;
+    private PrintWriter out;
+    private BufferedReader in;
+    private volatile boolean running = true;
+
+    // 建構子：現在接收學生姓名、簽到狀態和活動選擇
+    public StudentClient(String studentName, int attendanceStatus, int activityChoice) {
+        this.clientStudentName = studentName;
+        this.clientAttendanceStatus = attendanceStatus;
+        this.clientActivityChoice = activityChoice;
+    }
+
+    @Override
+    public void run() {
         try {
             initializeConnection();
 
-            // 啟動專門接收 server 消息的執行緒
+            sendIdentityToServer(); // 先發送身份
+
+            // 如果學生已簽到，才發送狀態和活動
+            if (clientAttendanceStatus == 1) {
+                sendAttendanceStatusToServer(clientAttendanceStatus); // 發送簽到狀態 (例如 "到")
+                sendActivityChoiceToServer(clientActivityChoice);     // 發送活動選擇 (例如 "喝水")
+            } else {
+                // 如果學生未到，只發送未到狀態
+                sendAttendanceStatusToServer(clientAttendanceStatus); // 發送簽到狀態 (例如 "未到")
+            }
+
+
             new Thread(() -> {
                 try {
                     String serverMessage;
-                    while ((serverMessage = in.readLine()) != null) {
-                        // Server返回消息
-                        System.out.println("\n" + serverMessage);
+                    while (running && (serverMessage = in.readLine()) != null) {
+                        System.out.println(clientStudentName + " 收到伺服器消息: " + serverMessage);
                     }
                 } catch (IOException e) {
-                    System.out.println("與伺服器連線中斷");
+                    if (running) {
+                        System.err.println(clientStudentName + " 伺服器消息接收中斷: " + e.getMessage());
+                    }
+                } finally {
+                    running = false;
                 }
             }).start();
 
-            Scanner scanner = new Scanner(System.in);
-            // 主迴圈：持續顯示選單
-            while (running) {
-                // showMenu(scanner);ccccccccccccccccccccccccccccccccccccccccccccccccccc
-            }
+            // 客戶端等待一段時間，讓伺服器有機會回覆，然後結束連線
+            TimeUnit.SECONDS.sleep(3);
 
-            // 離開前關閉連線
-            closeConnection();
-            scanner.close();
-            System.out.println("應用程式已關閉");
-
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println(clientStudentName + " 客戶端主執行緒被中斷。");
         } catch (Exception e) {
+            System.err.println(clientStudentName + " 客戶端應用程式發生錯誤: " + e.getMessage());
             e.printStackTrace();
+        } finally {
+            closeConnection();
+            System.out.println(clientStudentName + " 客戶端連線已關閉。");
         }
     }
 
-    // 初始化與 server 的連線
-    private static void initializeConnection() {
+    private void initializeConnection() throws IOException {
+        System.out.println(clientStudentName + " 嘗試連接伺服器...");
         try {
             socket = new Socket(SERVER_IP, SERVER_PORT);
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            // 送出身份識別
-            out.println("STUDENT:" + studentName);
-            System.out.println("已連接到伺服器: " + SERVER_IP + ":" + SERVER_PORT);
+            out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+            System.out.println(clientStudentName + " 已連接到伺服器: " + SERVER_IP + ":" + SERVER_PORT);
         } catch (IOException e) {
-            System.err.println("連接伺服器失敗: " + e.getMessage());
-            System.exit(1);
+            System.err.println(clientStudentName + " 連接伺服器失敗: " + e.getMessage());
+            running = false;
+            throw e;
         }
     }
 
-    // 關閉連線的方法
-    private static void closeConnection() {
+    private void sendIdentityToServer() {
+        if (out != null) {
+            out.println("STUDENT:" + clientStudentName);
+            System.out.println(clientStudentName + " 已發送身份識別。");
+        } else {
+            System.err.println(clientStudentName + " 輸出流未初始化，無法發送身份。");
+        }
+    }
+
+    // 發送簽到狀態
+    private void sendAttendanceStatusToServer(int status) {
+        if (out != null) {
+            String statusString = (status == 1) ? "到" : "未到";
+            out.println("ATTENDANCE:" + statusString);
+            System.out.println(clientStudentName + " 已發送簽到狀態: " + statusString);
+        } else {
+            System.err.println(clientStudentName + " 輸出流未初始化，無法發送簽到狀態。");
+        }
+    }
+
+    // 發送活動選擇
+    private void sendActivityChoiceToServer(int choice) {
+        if (out != null) {
+            String activityString;
+            switch (choice) {
+                case 1: activityString = "喝水"; break;
+                case 2: activityString = "滑手機"; break;
+                case 3: activityString = "發呆"; break;
+                default: activityString = "未知"; break;
+            }
+            out.println("ACTIVITY:" + activityString);
+            System.out.println(clientStudentName + " 已發送活動選擇: " + activityString);
+        } else {
+            System.err.println(clientStudentName + " 輸出流未初始化，無法發送活動選擇。");
+        }
+    }
+
+    private void closeConnection() {
+        running = false;
         try {
             if (out != null) {
                 out.close();
@@ -72,116 +132,11 @@ public class StudentClient {
             if (in != null) {
                 in.close();
             }
-            if (socket != null) {
+            if (socket != null && !socket.isClosed()) {
                 socket.close();
             }
         } catch (IOException e) {
-            System.err.println("關閉連線時出錯: " + e.getMessage());
+            System.err.println("關閉 " + clientStudentName + " 的連線時出錯: " + e.getMessage());
         }
     }
-
-    public class SchoolSimulation {
-
-    // 如果 out, in, socket 是全局的，它們需要在這裡聲明
-    // private static PrintWriter out;
-    // private static BufferedReader in;
-    // private static Socket socket;
-
-    // 將 Student 定義為 SchoolSimulation 的靜態內部類別，以便在同一個檔案中
-    static class Student {
-        private int id;
-        private String name;
-        private int attendanceStatus; // 0 代表未到, 1 代表簽到
-        private int activityChoice;   // 儲存簽到學生隨機選擇的活動狀態 (1, 2, 3)
-
-        // 建構子
-        public Student(int id) {
-            this.id = id;
-            this.name = id + "號同學";
-
-            // Step 1: 模擬簽到或未到 (10% 未到機率)
-            Random random = new Random();
-            int attendanceRoll = random.nextInt(10); // 生成 0 到 9 的隨機數
-
-            if (attendanceRoll == 0) { // 0 的機率是 1/10，即 10%
-                this.attendanceStatus = 0; // 未到
-                this.activityChoice = -1; // 未到的學生沒有活動選擇，設為 -1 或其他標記值
-            } else {
-                this.attendanceStatus = 1; // 簽到
-                // Step 2: 如果簽到，才有後續的活動選擇 (1, 2, 3)
-                this.activityChoice = random.nextInt(3) + 1; // 生成 1, 2, 3 之間的隨機數
-            }
-        }
-
-        // 取得學生姓名
-        public String getName() {
-            return name;
-        }
-
-        // 取得簽到狀態
-        public int getAttendanceStatus() {
-            return attendanceStatus;
-        }
-
-        // 取得活動選擇
-        public int getActivityChoice() {
-            return activityChoice;
-        }
-
-        // 顯示學生完整狀態的方法
-        public void displayFullStatus() {
-            System.out.print(name);
-            if (attendanceStatus == 0) {
-                System.out.println(" 狀態：未到");
-            } else { // 簽到 (attendanceStatus == 1)
-                System.out.print(" 狀態：簽到，選擇了：");
-                switch (activityChoice) {
-                    case 1:
-                        System.out.println("喝水");
-                        // 如果 out 是全局的，並且已經初始化，可以在這裡使用
-                        // if (out != null) out.println("REQUEST_DRINK");
-                        break;
-                    case 2:
-                        System.out.println("滑手機");
-                        // if (out != null) out.println("REQUEST_PHONE");
-                        break;
-                    case 3:
-                        System.out.println("發呆");
-                        break;
-                    default:
-                        System.out.println("無效的活動選擇。");
-                }
-            }
-        }
-    } // Student 類別結束
-
-    public static void main(String[] args) {
-        List<Student> students = new ArrayList<>();
-        int numberOfStudents = 30;
-
-        // 生成 30 名學生並初始化他們的簽到和活動狀態
-        for (int i = 1; i <= numberOfStudents; i++) {
-            Student student = new Student(i);
-            students.add(student);
-        }
-
-        System.out.println("--- 學生簽到與活動狀態報告 ---");
-        // 遍歷所有學生，顯示他們的完整狀態
-        for (Student student : students) {
-            student.displayFullStatus();
-        }
-
-        // 您可以在這裡添加額外的統計或處理邏輯
-        // 例如：計算簽到人數、每種活動的參與人數等
-
-        // 如果有網路連線，可以在這裡處理關閉連線的邏輯
-        // try {
-        //     if (out != null) out.close();
-        //     if (in != null) in.close();
-        //     if (socket != null) socket.close();
-        // } catch (IOException e) {
-        //     System.err.println("關閉連線時出錯: " + e.getMessage());
-        // }
-    }
-}
 }
