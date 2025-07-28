@@ -1,6 +1,9 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.configuration.updateBuildConfiguration": "automatic",
     "java.project.sourcePaths": [
         "."
+    ],
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar"
     ]
 }

@@ -183,7 +183,8 @@ public class ClassroomServer {
                             out.println("目前教室學生人數：" + students.size());
                             break;
                         case "find":
-                            String targetName = input.substring(5).trim();
+                            // String targetName = input.substring(5).trim();
+                            String targetName = msg.getTarget();
                             StudentHandler targetStudent = findStudentByName(targetName);
                             if (targetStudent != null) {
                                 // 你可以選擇發送訊息給該學生
@@ -191,6 +192,16 @@ public class ClassroomServer {
                                 out.println("已找到學生 " + targetName + " 並發送訊息");
                             } else {
                                 out.println("找不到學生 " + targetName);
+                            }
+                            break;
+                        case "memo":
+                            StudentHandler s = findStudentByName(msg.getTarget());
+                            if (s != null) {
+                                // 你可以選擇發送訊息給該學生
+                                s.sendMessage(msg.getContent());
+                                out.println("已將訊息傳遞給學生 " + msg.getTarget());
+                            } else {
+                                out.println("找不到學生 " + msg.getTarget());
                             }
                             break;
                         case "quit":

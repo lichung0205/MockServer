@@ -122,7 +122,7 @@ public class GmToolsApp {
                 target = scanner.nextLine().trim().toLowerCase();
                 System.out.println("請輸入您想傳達的訊息");
                 content = scanner.nextLine().trim();
-                doAction(new Message("find", target, content));
+                doAction(new Message("memo", target, content));
                 break;
             case "q":
                 doAction(new Message("quit", target, content));

@@ -1,28 +1,53 @@
-# 編譯後的 Java 類別檔
+# 🔧 Java 編譯產物
 *.class
+*.jar
+*.war
+*.ear
 
-# 執行過程產生的 log 或暫存檔
+# 🧪 執行中產生的暫存檔與紀錄檔
 *.log
+*.tmp
+*.swp
 
-# VSCode 設定（若團隊不需要共用）
-.vscode/
+# 🗃️ 編譯與打包輸出資料夾
+bin/
+out/
+build/
+target/
 
-# macOS 系統隱藏檔案
+# 💻 VSCode 設定（僅忽略不必要的，保留共用設定）
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+
+# 🍎 macOS 系統檔案
 .DS_Store
 
-# Windows 系統隱藏檔案
+# 🪟 Windows 系統檔案
 Thumbs.db
 desktop.ini
 
-# IDEA (如果有人用 IntelliJ IDEA)
+# 💡 IntelliJ IDEA
 .idea/
 *.iml
 
-# 其他 Java 專案可能產生的東西
-bin/
-out/
+# 🧱 Eclipse 專用（若用不到可略過）
+.classpath
+.project
+.settings/
 
-# 
+# 💬 Gradle/Maven/Ant 產物（依專案實況可調整）
+.gradle/
+.mvn/
+**/build/
+**/target/
+
+# 🧙 雜項（有用到再開）
 .metadata/
 .build/
 *.bat
+
+# ✅ Git 本身不追蹤這些
+*.lock
+*.bak
+*.old
