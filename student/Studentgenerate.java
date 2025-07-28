@@ -89,7 +89,6 @@ public class Studentgenerate {
 
         List<Thread> clientThreads = new ArrayList<>();
         for (Student student : students) {
-            // StudentClient 仍然只傳遞姓名和簽到狀態，不含活動
             StudentClient client = new StudentClient(
                 student.getName(),
                 student.getAttendanceStatus(),
