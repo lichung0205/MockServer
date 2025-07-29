@@ -5,6 +5,8 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
+import common.AuthType;
+import common.LoginInfo;
 import common.Message;
 
 public class GmToolsApp {
@@ -62,8 +64,9 @@ public class GmToolsApp {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             // 送出身份識別
-            out.println("TEACHER:Neil");
-            System.out.println("已連接到伺服器: " + SERVER_IP + ":" + SERVER_PORT);
+            LoginInfo info = new LoginInfo(AuthType.TEACHER, "neil", "尼奧");
+            out.println(info.toJson());
+            // System.out.println("已連接到伺服器: " + SERVER_IP + ":" + SERVER_PORT);
         } catch (IOException e) {
             System.err.println("連接伺服器失敗: " + e.getMessage());
             System.exit(1);
