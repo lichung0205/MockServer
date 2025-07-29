@@ -1,11 +1,10 @@
 package student;
 
-import java.io.*;
-import java.net.*;
-import java.util.concurrent.TimeUnit; // 仍需保留，因為接收執行緒可能會用到短暫休眠來避免忙等
-
 import common.AuthType;
 import common.LoginInfo;
+import java.io.*; // 仍需保留，因為接收執行緒可能會用到短暫休眠來避免忙等
+import java.net.*;
+import java.util.concurrent.TimeUnit;
 
 public class StudentClient implements Runnable {
 
@@ -137,7 +136,7 @@ public class StudentClient implements Runnable {
     private void sendActivityChoiceToServer(int choice) {
         if (out != null) {
             String activityString = getActivityString(choice);
-            out.println("ACTIVITY:" + activityString);
+            out.println( activityString);
             System.out.println(clientStudentName + " 已發送活動選擇: " + activityString);
         } else {
             System.err.println(clientStudentName + " 輸出流未初始化，無法發送活動選擇。");
