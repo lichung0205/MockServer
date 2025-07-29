@@ -125,7 +125,7 @@ public class StudentClient implements Runnable {
 
     private void sendAttendanceStatusToServer(int status) {
         if (out != null) {
-            String statusString = (status == 1) ? "簽到" : "未到";
+            String statusString = (status == 1) ? "Y" : "N";
             out.println("ATTENDANCE:" + statusString);
             System.out.println(clientStudentName + " 已發送簽到狀態: " + statusString);
         } else {
