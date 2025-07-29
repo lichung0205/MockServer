@@ -27,7 +27,7 @@ public class Studentgenerate {
                 this.activityChoice = -1; // 未到的學生沒有活動選擇
             } else {
                 this.attendanceStatus = 1; // 簽到
-                this.activityChoice = random.nextInt(3) + 1; // 1, 2, 3 之間的隨機數
+                this.activityChoice = random.nextInt(4) + 1; // 1, 2, 3 之間的隨機數
             }
         }
 
@@ -55,13 +55,16 @@ public class Studentgenerate {
                 System.out.print(" 狀態：簽到，選擇了：");
                 switch (activityChoice) {
                     case 1:
-                        System.out.println("喝水");
+                        System.out.println("SLEEP");
                         break;
                     case 2:
-                        System.out.println("滑手機");
+                        System.out.println("TALKING");
                         break;
                     case 3:
-                        System.out.println("發呆");
+                        System.out.println("REQUEST_DRINK");
+                        break;
+                    case 4:
+                        System.out.println("REQUEST_PHONE");
                         break;
                     default:
                         System.out.println("無效的活動選擇。");

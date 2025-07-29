@@ -147,11 +147,13 @@ public class StudentClient implements Runnable {
     private String getActivityString(int choice) {
         switch (choice) {
             case 1:
-                return "喝水";
+                return "SLEEP";
             case 2:
-                return "滑手機";
+                return "TALKING";
             case 3:
-                return "發呆";
+                return "REQUEST_DRINK";
+            case 4:
+                return "REQUEST_PHONE";
             default:
                 return "未知";
         }
