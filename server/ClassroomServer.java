@@ -34,7 +34,7 @@ public class ClassroomServer {
                     students.add(handler);
                     String studentKey = "s_" + info.getId();
                     if (!memoryCache.containsKey(studentKey))
-                        memoryCache.put(studentKey, handler); // 加入 cache
+                        memoryCache.put(studentKey, new StudentInfo(handler)); // 加入 cache
                     new Thread(handler).start();
                     System.out.printf("%s 號 %s 已進入教室\n", info.getId(), info.getName());
                 } // 導師登入 gmtools
@@ -103,15 +103,21 @@ public class ClassroomServer {
                         broadcastToTeachers(showStr);
                         memoryCache.remove("s_" + id);
                         break;
-                    } else if (input.equalsIgnoreCase("CHECKIN")) {
-                        String key = "s_" + id;
-                        Object obj = memoryCache.get(key);
-                        if (obj instanceof StudentInfo) {
-                            ((StudentInfo) obj).setCheckedIn(true);
+                    } else if (input.startsWith("ATTENDANCE")) {
+                        String[] checkin = input.split(":");
+                        if (checkin.length == 2) {
+                            if (checkin[1].equalsIgnoreCase("Y")) {
+                                String key = "s_" + id;
+                                Object obj = memoryCache.get(key);
+                                if (obj instanceof StudentInfo) {
+                                    ((StudentInfo) obj).setCheckedIn(true);
+                                }
+                                showStr = getShowString(studentName, "已簽到");
+                                System.out.println(showStr);
+                                broadcastToTeachers(showStr);
+                                out.println("簽到成功");
+                            }
                         }
-                        showStr = getShowString(studentName, "已簽到");
-                        broadcastToTeachers(showStr);
-                        out.println("簽到成功");
                     } else if (input.equalsIgnoreCase("SLEEP")) {
                         showStr = getShowString(studentName, "在趴睡");
                         broadcastToTeachers(showStr);
@@ -207,7 +213,7 @@ public class ClassroomServer {
                         case "find":
                             // String targetName = input.substring(5).trim();
                             String targetName = msg.getTarget();
-                            StudentHandler targetStudent = findStudentByName(targetName);
+                            StudentHandler targetStudent = findStudentById(targetName);
                             if (targetStudent != null) {
                                 // 你可以選擇發送訊息給該學生
                                 targetStudent.sendMessage(name + "老師點名你了！");
@@ -217,7 +223,7 @@ public class ClassroomServer {
                             }
                             break;
                         case "memo":
-                            StudentHandler s = findStudentByName(msg.getTarget());
+                            StudentHandler s = findStudentById(msg.getTarget());
                             if (s != null) {
                                 // 你可以選擇發送訊息給該學生
                                 s.sendMessage(msg.getContent());
@@ -256,8 +262,8 @@ public class ClassroomServer {
         }
     }
 
-    static StudentHandler findStudentByName(String name) {
-        Object obj = memoryCache.get("s_" + name);
+    static StudentHandler findStudentById(String Id) {
+        Object obj = memoryCache.get("s_" + Id);
         if (obj instanceof StudentInfo) {
             return ((StudentInfo) obj).getHandler();
         }
