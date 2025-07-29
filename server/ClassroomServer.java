@@ -1,11 +1,11 @@
 package server;
 
+import common.Message;
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
-
-import common.Message;
+import server.ClassroomServer.StudentHandler;
 
 public class ClassroomServer {
     private static final int PORT = 9527;
@@ -29,7 +29,7 @@ public class ClassroomServer {
                     students.add(handler);
                     String studentKey = "s_" + studentName;
                     if (!memoryCache.containsKey(studentKey))
-                        memoryCache.put(studentKey, handler); // 加入 cache
+                        memoryCache.put(studentKey, new StudentInfo(handler)); // 加入 cache
                     new Thread(handler).start();
                     System.out.println(studentName + " 已進入教室");
                 } else if (identity.startsWith("TEACHER:")) {
@@ -44,6 +44,28 @@ public class ClassroomServer {
         }
     }
 
+    public static class StudentInfo {
+        private final StudentHandler handler;
+        private boolean checkedIn;
+
+        public StudentInfo(StudentHandler handler) {
+            this.handler = handler;
+            this.checkedIn = false;
+        }
+
+        public StudentHandler getHandler() {
+            return handler;
+        }
+
+        public boolean isCheckedIn() {
+            return checkedIn;
+        }
+
+        public void setCheckedIn(boolean checkedIn) {
+            this.checkedIn = checkedIn;
+        }
+    }
+    
     // 學生處理器
     static class StudentHandler implements Runnable {
         private final Socket socket;
@@ -66,15 +88,34 @@ public class ClassroomServer {
                 while ((input = in.readLine()) != null) {
                     // 根據收到的請求做相對應的處理
                     if (input.equalsIgnoreCase("QUIT")) {
-                        System.out.println(studentName + " 已離開教室");
+                        showStr = getShowString(studentName ,"已離開教室");
+                        System.out.println(showStr);
+                        broadcastToTeachers(showStr);
                         memoryCache.remove("s_" + studentName);
                         break;
+                    } else if (input.equalsIgnoreCase("CHECKIN")) {
+                        String key = "s_" + studentName;
+                        Object obj = memoryCache.get(key);
+                        if (obj instanceof StudentInfo) {
+                            ((StudentInfo) obj).setCheckedIn(true);
+                        }
+                        showStr = getShowString(studentName,"已簽到");
+                        broadcastToTeachers(showStr);
+                        out.println("簽到成功");
+                    } else if (input.equalsIgnoreCase("SLEEP")) {
+                        showStr = getShowString(studentName,"在趴睡");
+                        broadcastToTeachers(showStr);
+                        out.println("在趴睡");
+                    } else if (input.equalsIgnoreCase("TALKING")) {
+                        showStr = getShowString(studentName,"在講話");
+                        broadcastToTeachers(showStr);
+                        out.println("在講話");
                     } else if (input.equalsIgnoreCase("REQUEST_DRINK")) {
-                        showStr = String.format("%s在喝水", studentName);
+                        showStr = getShowString(studentName,"在喝水");
                         System.out.println(showStr);
                         out.println(showStr);
                     } else if (input.equalsIgnoreCase("REQUEST_PHONE")) {
-                        showStr = String.format("%s在滑手機", studentName);
+                        showStr = getShowString(studentName,"在滑手機");
                         System.out.println(showStr);
                         out.println(showStr);
                     } else {
@@ -99,6 +140,17 @@ public class ClassroomServer {
                 out.println("老師說: " + message);
             }
         }
+    
+        private String getShowString(String name, String doing){
+            return String.format("%s %s", name, doing);
+        }
+
+        private void broadcastToTeachers(String message) {
+            for (TeacherHandler teacher : teachers) {
+                teacher.sendMessage("[通知] " + message);
+            }
+        }
+
     }
 
     // 導師處理器 (可按照需求修改)
@@ -226,13 +278,21 @@ public class ClassroomServer {
                 }
             }
         }
+
+        public void sendMessage(String message) {
+            if (out != null) {
+                out.println(message);
+            }
+        }            
+
     }
 
     static StudentHandler findStudentByName(String name) {
         Object obj = memoryCache.get("s_" + name);
-        if (obj instanceof StudentHandler) {
-            return (StudentHandler) obj;
+        if (obj instanceof StudentInfo) {
+            return ((StudentInfo) obj).getHandler();
         }
         return null;
     }
 }
+
