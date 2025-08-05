@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "ClassroomServer",
+            "request": "launch",
+            "mainClass": "jack.ClassroomServer",
+            "projectName": "classroom"
+        },
+        {
+            "type": "java",
             "name": "Current File",
             "request": "launch",
             "mainClass": "${file}"
