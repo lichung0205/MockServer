@@ -14,8 +14,12 @@ bin/
 out/
 build/
 target/
+**/bin/
+**/out/
+**/build/
+**/target/
 
-# 💻 VSCode 設定（僅忽略不必要的，保留共用設定）
+# 💻 VSCode 設定（保留共用設定）
 .vscode/*
 !.vscode/settings.json
 !.vscode/launch.json
@@ -31,23 +35,27 @@ desktop.ini
 .idea/
 *.iml
 
-# 🧱 Eclipse 專用（若用不到可略過）
+# 🧱 Eclipse 專用
 .classpath
 .project
 .settings/
+**/.classpath
+**/.project
+**/.settings/
 
-# 💬 Gradle/Maven/Ant 產物（依專案實況可調整）
+# 💬 建構工具產物（Gradle/Maven/Ant）
 .gradle/
 .mvn/
+**/.gradle/
+**/.mvn/
 **/build/
 **/target/
 
-# 🧙 雜項（有用到再開）
+# 🧙 雜項（視情況開啟）
 .metadata/
 .build/
 *.bat
-
-# ✅ Git 本身不追蹤這些
-*.lock
+*.sh
 *.bak
 *.old
+*.lock
