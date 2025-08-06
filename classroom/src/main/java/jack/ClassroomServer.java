@@ -1,9 +1,17 @@
 package jack;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.google.gson.Gson;
 
@@ -127,32 +135,32 @@ public class ClassroomServer {
                                 showStr = getShowString(studentName, "已簽到");
                                 System.out.println(showStr);
                                 broadcastToTeachers(showStr);
-                                out.println("簽到成功");
+                                System.out.println("簽到成功");
                             }
                         }
                     } else if (input.equalsIgnoreCase("SLEEP")) {
                         showStr = getShowString(studentName, "在趴睡");
                         broadcastToTeachers(showStr);
                         updateActivity(id, translateAction(input));
-                        out.println("在趴睡");
+                        System.out.println("在趴睡");
                     } else if (input.equalsIgnoreCase("TALKING")) {
                         showStr = getShowString(studentName, "在講話");
                         broadcastToTeachers(showStr);
                         updateActivity(id, translateAction(input));
-                        out.println("在講話");
+                        System.out.println("在講話");
                     } else if (input.equalsIgnoreCase("REQUEST_DRINK")) {
                         showStr = getShowString(studentName, "在喝水");
                         System.out.println(showStr);
                         updateActivity(id, translateAction(input));
-                        out.println(showStr);
+                        System.out.println(showStr);
                     } else if (input.equalsIgnoreCase("REQUEST_PHONE")) {
                         showStr = getShowString(studentName, "在滑手機");
                         System.out.println(showStr);
                         updateActivity(id, translateAction(input));
-                        out.println(showStr);
+                        System.out.println(showStr);
                     } else {
                         System.out.println(studentName + " 發送未知命令: " + input);
-                        out.println("未知命令");
+                        System.out.println("未知命令");
                     }
                 }
             } catch (IOException e) {
@@ -191,7 +199,7 @@ public class ClassroomServer {
 
         public void sendMessage(String message) {
             if (out != null) {
-                out.println("老師說: " + message);
+                System.out.println("老師說: " + message);
             }
         }
 
@@ -258,16 +266,16 @@ public class ClassroomServer {
                             for (StudentHandler student : students) {
                                 student.sendMessage("[廣播] " + broadcastMsg);
                             }
-                            out.println(name + "老師您的廣播訊息已發送給在場所有學生");
+                            System.out.println(name + "老師您的廣播訊息已發送給在場所有學生");
                             break;
                         case "count":
-                            out.println("目前教室學生人數：" + students.size());
+                            System.out.println("目前教室學生人數：" + students.size());
                             for (StudentHandler student : students) {
                                 String key = "s_" + student.getId();
                                 Object obj = memoryCache.get(key);
                                 if (obj instanceof StudentInfo) {
                                     StudentInfo info = (StudentInfo) obj;
-                                    out.println(String.format("%s %s [%s] [%s]", student.getId(), student.getName(),
+                                    System.out.println(String.format("%s %s [%s] [%s]", student.getId(), student.getName(),
                                             info.isCheckedIn() ? "已簽到" : "未簽到", info.getLastActivity()));
                                 }
                             }
@@ -288,7 +296,7 @@ public class ClassroomServer {
                                 }
                             }
                             String json = new Gson().toJson(studentList);
-                            out.println(json);
+                            System.out.println(json);
                             break;
                         case "find":
                             // String targetName = input.substring(5).trim();
@@ -297,9 +305,9 @@ public class ClassroomServer {
                             if (targetStudent != null) {
                                 // 你可以選擇發送訊息給該學生
                                 targetStudent.sendMessage(name + "老師點名你了！");
-                                out.println("已找到學生 " + targetName + " 並發送訊息");
+                                System.out.println("已找到學生 " + targetName + " 並發送訊息");
                             } else {
-                                out.println("找不到學生 " + targetName);
+                                System.out.println("找不到學生 " + targetName);
                             }
                             break;
                         case "memo":
@@ -307,22 +315,23 @@ public class ClassroomServer {
                             if (s != null) {
                                 // 你可以選擇發送訊息給該學生
                                 s.sendMessage(msg.getContent());
-                                out.println("已將訊息傳遞給學生 " + msg.getTarget());
+                                System.out.println("已將訊息傳遞給學生 " + msg.getTarget());
                             } else {
-                                out.println("找不到學生 " + msg.getTarget());
+                                System.out.println("找不到學生 " + msg.getTarget());
                             }
                             break;
                         case "clearroom":
                             for (StudentHandler student : students) {
                                 student.sendMessage("[警告] 教室將在 30 秒後清場，請儘速保存資料並離開。");
                             }
-                            out.println("清場通知已發送，將於 30 秒後強制斷線。");
+                            System.out.println("清場通知已發送，將於 30 秒後強制斷線。");
                             new Thread(() -> {
                                 try {
                                     for (int i = 30; i >= 1; i--) {
                                         String countdownMsg = "[倒數] 教室將於 " + i + " 秒後清場";
                                         for (StudentHandler student : students) {
                                             student.sendMessage(countdownMsg);
+                                            System.out.println(countdownMsg);
                                         }
                                         Thread.sleep(1000);
                                     }
@@ -340,7 +349,7 @@ public class ClassroomServer {
                             System.out.println("導師 已離開教室");
                             break;
                         default:
-                            out.println("未知指令");
+                            System.out.println("未知指令");
                     }
                 }
             } catch (IOException e) {
@@ -358,7 +367,7 @@ public class ClassroomServer {
 
         public void sendMessage(String message) {
             if (out != null) {
-                out.println(message);
+                System.out.println(message);
             }
         }
     }
