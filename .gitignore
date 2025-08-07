@@ -1,23 +1,19 @@
 # 🔧 Java 編譯產物
-*.class
-*.jar
-*.war
-*.ear
+projectConsole/**/*.class
+projectConsole/**/*.jar
+projectConsole/**/*.war
+projectConsole/**/*.ear
 
 # 🧪 執行中產生的暫存檔與紀錄檔
-*.log
-*.tmp
-*.swp
+projectConsole/**/*.log
+projectConsole/**/*.tmp
+projectConsole/**/*.swp
 
 # 🗃️ 編譯與打包輸出資料夾
-bin/
-out/
-build/
-target/
-**/bin/
-**/out/
-**/build/
-**/target/
+projectConsole/bin/
+projectConsole/out/
+projectConsole/build/
+projectConsole/target/
 
 # 💻 VSCode 設定（保留共用設定）
 .vscode/*
@@ -32,30 +28,30 @@ Thumbs.db
 desktop.ini
 
 # 💡 IntelliJ IDEA
-.idea/
-*.iml
+projectConsole/.idea/
+projectConsole/**/*.iml
 
 # 🧱 Eclipse 專用
-.classpath
-.project
-.settings/
-**/.classpath
-**/.project
-**/.settings/
+projectConsole/.classpath
+projectConsole/.project
+projectConsole/.settings/
+projectConsole/**/.classpath
+projectConsole/**/.project
+projectConsole/**/.settings/
 
 # 💬 建構工具產物（Gradle/Maven/Ant）
-.gradle/
-.mvn/
-**/.gradle/
-**/.mvn/
-**/build/
-**/target/
+projectConsole/.gradle/
+projectConsole/.mvn/
+projectConsole/**/.gradle/
+projectConsole/**/.mvn/
+projectConsole/**/build/
+projectConsole/**/target/
 
 # 🧙 雜項（視情況開啟）
-.metadata/
-.build/
-*.bat
-*.sh
-*.bak
-*.old
-*.lock
+projectConsole/.metadata/
+projectConsole/.build/
+projectConsole/**/*.bat
+projectConsole/**/*.sh
+projectConsole/**/*.bak
+projectConsole/**/*.old
+projectConsole/**/*.lock
