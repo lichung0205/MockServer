@@ -1,29 +1,32 @@
-# ========== 🖥 Java 小黑窗專案 (projectConsole) ==========
+# ======================
+# 🖥 Java 小黑窗專案 (projectConsole)
+# ======================
+
+# 編譯產物
 projectConsole/**/*.class
 projectConsole/**/*.jar
 projectConsole/**/*.war
 projectConsole/**/*.ear
 
+# 暫存與紀錄檔
 projectConsole/**/*.log
 projectConsole/**/*.tmp
 projectConsole/**/*.swp
 
+# 編譯/打包輸出
 projectConsole/bin/
 projectConsole/out/
 projectConsole/build/
 projectConsole/target/
 
+# IDE / 工具設定
 .vscode/*
 !.vscode/settings.json
 !.vscode/launch.json
-
-.DS_Store
-Thumbs.db
-desktop.ini
-
 projectConsole/.idea/
 projectConsole/**/*.iml
 
+# Eclipse 專用
 projectConsole/.classpath
 projectConsole/.project
 projectConsole/.settings/
@@ -31,6 +34,7 @@ projectConsole/**/.classpath
 projectConsole/**/.project
 projectConsole/**/.settings/
 
+# Maven / Gradle / Ant
 projectConsole/.gradle/
 projectConsole/.mvn/
 projectConsole/**/.gradle/
@@ -38,6 +42,7 @@ projectConsole/**/.mvn/
 projectConsole/**/build/
 projectConsole/**/target/
 
+# 其他雜項
 projectConsole/.metadata/
 projectConsole/.build/
 projectConsole/**/*.bat
@@ -46,19 +51,29 @@ projectConsole/**/*.bak
 projectConsole/**/*.old
 projectConsole/**/*.lock
 
-# ========== 🚀 React + Vite 前端專案 (gm-tools-web) ==========
+# ======================
+# 🚀 React + Vite 前端專案 (gm-tools-web)
+# ======================
+
+# 依賴與快取
 gm-tools-web/node_modules/
-gm-tools-web/dist/
 gm-tools-web/.vite/
+gm-tools-web/*.tsbuildinfo
 gm-tools-web/coverage/
 gm-tools-web/.eslintcache
-gm-tools-web/*.tsbuildinfo
 
-# 環境變數
+# 編譯輸出
+gm-tools-web/dist/
+gm-tools-web/build/
+
+# 環境變數檔（保留 example）
 gm-tools-web/.env
 gm-tools-web/.env.*
 !gm-tools-web/.env.example
 
-# 編輯器與系統檔
+# 系統檔案
+.DS_Store
+Thumbs.db
+desktop.ini
 gm-tools-web/.DS_Store
 gm-tools-web/Thumbs.db
