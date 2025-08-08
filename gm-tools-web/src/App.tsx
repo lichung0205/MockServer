@@ -1,33 +1,49 @@
-// App.tsx
-import { Container, Typography, Paper } from '@mui/material';
-import ConnectionStatus from './components/ConnectionStatus';
-import ControlPanel from './components/ControlPanel';
-import MessageLog from './components/MessageLog';
-import useMockWebSocket from './hooks/useMockWebSocket';
+import { useState } from 'react';
+import AppLayout from '@/components/layout/AppLayout';
+import StatusBar from '@/components/StatusBar';
+import Menu from '@/components/Menu';
+import MessageLog from '@/components/MessageLog';
+import LoginForm from '@/components/LoginForm';
+import BroadcastDialog from '@/dialogs/BroadcastDialog';
+import CommentDialog from '@/dialogs/CommentDialog';
+import ConfirmDialog from '@/dialogs/ConfirmDialog';
+import { useAppStore } from '@/store/useAppStore';
 
 export default function App() {
-  const { isConnected, logs, connect, mockSend } = useMockWebSocket();
+  const isLoggedIn = useAppStore(s => s.isLoggedIn);
+  const push = useAppStore(s => s.push);
+
+  const [openB, setOpenB] = useState(false);
+  const [openC, setOpenC] = useState(false);
+  const [openClear, setOpenClear] = useState(false);
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={3} sx={{ p: 3 }}>
-        <Typography variant="h4" gutterBottom>
-          🎓 教室管理工具
-        </Typography>
-
-        <ConnectionStatus
-          isConnected={isConnected}
-          onConnect={connect}
-        />
-
-        {isConnected && (
-          <ControlPanel
-            onAction={(type, payload) => mockSend(type, payload)}
+    <>
+      <AppLayout
+        statusBar={<StatusBar />}
+        left={
+          <Menu
+            onBroadcast={() => setOpenB(true)}
+            onComment={() => setOpenC(true)}
+            onClear={() => setOpenClear(true)}
           />
-        )}
+        }
+        center={isLoggedIn ? <MessageLog /> : <LoginForm />}
+      />
 
-        <MessageLog logs={logs} />
-      </Paper>
-    </Container>
+      {/* dialogs */}
+      <BroadcastDialog open={openB} onClose={() => setOpenB(false)} />
+      <CommentDialog open={openC} onClose={() => setOpenC(false)} />
+      <ConfirmDialog
+        open={openClear}
+        onClose={() => setOpenClear(false)}
+        title="清場"
+        message="您是否要清理教室？"
+        confirmText="是"
+        cancelText="否"
+        confirmColor="error"
+        onConfirm={() => { push({ type: 'clear', at: Date.now(), confirm: true }); setOpenClear(false); }}
+      />
+    </>
   );
 }

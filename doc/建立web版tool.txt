@@ -19,4 +19,20 @@ npm install @mui/material @emotion/react @emotion/styled @mui/icons-material
 
 npm install --save-dev @types/ws
 
+模組化架構
+src/
+  store/
+    useAppStore.ts          ← 全域狀態（登入、連線、訊息）
+  components/
+    layout/AppLayout.tsx    ← 頁面框架（Header/Drawer/左右欄位）
+    StatusBar.tsx           ← 右上角狀態＋連線按鈕
+    Menu.tsx                ← 左側選單（三個功能）
+    MessageLog.tsx          ← 中間訊息紀錄
+    LoginForm.tsx           ← 登入表單
+  dialogs/
+    BroadcastDialog.tsx     ← 廣播輸入
+    CommentDialog.tsx       ← 留言輸入
+    ConfirmDialog.tsx       ← 通用確認對話框（清場/登出都可用）
+  App.tsx                   ← 組裝頁面（很薄）
+
 

@@ -1,25 +1,26 @@
-// src/components/MessageLog.tsx
-import { Card, CardContent, Typography, Stack } from '@mui/material';
+import { Card, CardContent, Stack, Typography, Box } from '@mui/material';
+import { useAppStore } from '@/store/useAppStore';
 
-type Props = { logs: string[] };
 
-export default function MessageLog({ logs }: Props) {
+export default function MessageLog() {
+    const messages = useAppStore(s => s.messages);
+
     return (
-        <Card variant="outlined" sx={{ mt: 3 }}>
+        <Card>
             <CardContent>
-                <Typography variant="h6" gutterBottom>
-                    訊息紀錄
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    與 Server 互動訊息紀錄（目前為本機 Mock）
                 </Typography>
-                <Stack spacing={1} sx={{ maxHeight: 260, overflow: 'auto' }}>
-                    {logs.length === 0 ? (
-                        <Typography color="text.secondary">目前沒有訊息</Typography>
-                    ) : (
-                        logs.map((line, i) => (
-                            <Typography key={i} variant="body2">
-                                {line}
-                            </Typography>
-                        ))
-                    )}
+                <Stack spacing={1}>
+                    {messages.length === 0 && <Typography color="text.secondary">目前沒有訊息</Typography>}
+                    {messages.map((m, i) => (
+                        <Box key={i} sx={{ fontFamily: 'monospace', fontSize: 14 }}>
+                            {new Date(m.at).toLocaleTimeString()} —{' '}
+                            {m.type === 'broadcast' && `【廣播】${m.content}`}
+                            {m.type === 'comment' && `【留言】(${m.studentId}) ${m.content}`}
+                            {m.type === 'clear' && `【清場】${m.confirm ? '已執行' : '已取消'}`}
+                        </Box>
+                    ))}
                 </Stack>
             </CardContent>
         </Card>
