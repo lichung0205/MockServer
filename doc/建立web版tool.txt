@@ -1,0 +1,22 @@
+
+建立 React 專案 使用工具	Vite
+npm create vite@latest gm-tools-ui -- --template react-ts
+cd gm-tools-ui
+
+| 套件                    | 用途                                                     |
+| --------------------- | ------------------------------------------------------ |
+| `@mui/material`       | ✅ 核心 Material UI 元件，例如 Button、Dialog、TextField         |
+| `@emotion/react`      | ✅ CSS-in-JS 樣式引擎（React 整合）                             |
+| `@emotion/styled`     | ✅ styled API，讓你可以寫 styled components                   |
+| `@mui/icons-material` | ✅ 各種常見的 Google Material Icons，像是 Add、Delete、Search 等圖示 |
+
+npm install @mui/material @emotion/react @emotion/styled @mui/icons-material
+
+| 部分          | 解釋                                        |
+| ------------ | ----------------------------------------- |
+| `@types/ws`  | 安裝 `ws` 這個 WebSocket 套件的 TypeScript 型別定義  |
+| `--save-dev` | 表示這個套件是**開發時用的**，不會被打包到正式環境（例如上線用的 build） |
+
+npm install --save-dev @types/ws
+
+

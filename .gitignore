@@ -1,37 +1,29 @@
-# 🔧 Java 編譯產物
+# ========== 🖥 Java 小黑窗專案 (projectConsole) ==========
 projectConsole/**/*.class
 projectConsole/**/*.jar
 projectConsole/**/*.war
 projectConsole/**/*.ear
 
-# 🧪 執行中產生的暫存檔與紀錄檔
 projectConsole/**/*.log
 projectConsole/**/*.tmp
 projectConsole/**/*.swp
 
-# 🗃️ 編譯與打包輸出資料夾
 projectConsole/bin/
 projectConsole/out/
 projectConsole/build/
 projectConsole/target/
 
-# 💻 VSCode 設定（保留共用設定）
 .vscode/*
 !.vscode/settings.json
 !.vscode/launch.json
 
-# 🍎 macOS 系統檔案
 .DS_Store
-
-# 🪟 Windows 系統檔案
 Thumbs.db
 desktop.ini
 
-# 💡 IntelliJ IDEA
 projectConsole/.idea/
 projectConsole/**/*.iml
 
-# 🧱 Eclipse 專用
 projectConsole/.classpath
 projectConsole/.project
 projectConsole/.settings/
@@ -39,7 +31,6 @@ projectConsole/**/.classpath
 projectConsole/**/.project
 projectConsole/**/.settings/
 
-# 💬 建構工具產物（Gradle/Maven/Ant）
 projectConsole/.gradle/
 projectConsole/.mvn/
 projectConsole/**/.gradle/
@@ -47,7 +38,6 @@ projectConsole/**/.mvn/
 projectConsole/**/build/
 projectConsole/**/target/
 
-# 🧙 雜項（視情況開啟）
 projectConsole/.metadata/
 projectConsole/.build/
 projectConsole/**/*.bat
@@ -55,3 +45,20 @@ projectConsole/**/*.sh
 projectConsole/**/*.bak
 projectConsole/**/*.old
 projectConsole/**/*.lock
+
+# ========== 🚀 React + Vite 前端專案 (gm-tools-web) ==========
+gm-tools-web/node_modules/
+gm-tools-web/dist/
+gm-tools-web/.vite/
+gm-tools-web/coverage/
+gm-tools-web/.eslintcache
+gm-tools-web/*.tsbuildinfo
+
+# 環境變數
+gm-tools-web/.env
+gm-tools-web/.env.*
+!gm-tools-web/.env.example
+
+# 編輯器與系統檔
+gm-tools-web/.DS_Store
+gm-tools-web/Thumbs.db

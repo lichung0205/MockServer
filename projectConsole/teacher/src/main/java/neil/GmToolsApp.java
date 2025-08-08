@@ -3,8 +3,6 @@ package neil;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
-
 import communication.LoginInfo;
 import communication.Message;
 import enums.AuthType;
@@ -15,128 +13,128 @@ public class GmToolsApp {
     private static Socket socket;
     private static PrintWriter out;
     private static BufferedReader in;
-    private static boolean running = true;
+    private static volatile boolean running = true;
 
     public static void main(String[] args) {
-        try {
+        try (Scanner scanner = new Scanner(System.in)) {
             initializeConnection();
-            AtomicLong speakTime = new AtomicLong(System.currentTimeMillis());
 
-            // 啟動專門接收 server 消息的執行緒
-            new Thread(() -> {
+            // 啟動接收伺服器消息的執行緒
+            Thread receiverThread = new Thread(() -> {
                 try {
                     String serverMessage;
-                    while ((serverMessage = in.readLine()) != null) {
-                        // Server返回消息
-                        System.out.println("\n" + serverMessage);
-                        speakTime.set(System.currentTimeMillis()); // 安全地更新值
+                    while (running && (serverMessage = in.readLine()) != null) {
+                        System.out.println("\n[伺服器回應] " + serverMessage);
                     }
                 } catch (IOException e) {
-                    System.out.println("與伺服器連線中斷");
+                    if (running) {
+                        System.out.println("\n與伺服器連線中斷: " + e.getMessage());
+                    }
+                } finally {
+                    running = false;
                 }
-            }).start();
+            });
+            receiverThread.setDaemon(true);  // 設為守護執行緒，隨主執行緒退出
+            receiverThread.start();
 
-            Scanner scanner = new Scanner(System.in);
-            // 主迴圈：持續顯示選單
+            // 主循環處理用戶輸入
             while (running) {
-                long diffTime = System.currentTimeMillis() - speakTime.get(); // 安全地讀取值
-                // 三秒都沒回訊息才顯示菜單
-                if (diffTime > 5000) {
-                    showMenu(scanner);
-                    speakTime.set(System.currentTimeMillis()); // 安全地更新值
-                }
+                showMenu(scanner);
             }
 
-            // 離開前關閉連線
-            closeConnection();
-            scanner.close();
-            System.out.println("應用程式已關閉");
-
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("程式錯誤: " + e.getMessage());
+        } finally {
+            closeConnection();
+            System.out.println("應用程式已關閉");
         }
     }
 
-    // 初始化與 server 的連線
-    private static void initializeConnection() {
-        try {
-            socket = new Socket(SERVER_IP, SERVER_PORT);
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            // 送出身份識別
-            LoginInfo info = new LoginInfo(AuthType.TEACHER, "neil", "尼奧");
-            out.println(info.toJson());
-            // System.out.println("已連接到伺服器: " + SERVER_IP + ":" + SERVER_PORT);
-        } catch (IOException e) {
-            System.err.println("連接伺服器失敗: " + e.getMessage());
-            System.exit(1);
-        }
+    private static void initializeConnection() throws IOException {
+        socket = new Socket(SERVER_IP, SERVER_PORT);
+        out = new PrintWriter(socket.getOutputStream(), true);
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+        // 身份驗證
+        LoginInfo info = new LoginInfo(AuthType.TEACHER, "neil", "尼奧");
+        out.println(info.toJson());
+        System.out.println("已連接至教室 (輸入 'q' 退出)");
     }
 
-    // 關閉連線的方法
     private static void closeConnection() {
+        running = false;
         try {
-            if (out != null)
-                out.close();
-            if (in != null)
-                in.close();
-            if (socket != null)
-                socket.close();
+            if (out != null) out.close();
+            if (in != null) in.close();
+            if (socket != null) socket.close();
         } catch (IOException e) {
             System.err.println("關閉連線時出錯: " + e.getMessage());
         }
     }
 
-    // 統一由這來發送
     private static void doAction(Message message) {
-        out.println(message.toJson());
+        if (out != null && !socket.isClosed()) {
+            out.println(message.toJson());
+        } else {
+            System.out.println("錯誤: 連線已中斷");
+        }
     }
 
-    // 顯示功能選單並依使用者輸入進行相對動作
     private static void showMenu(Scanner scanner) {
-
         System.out.println("\n===== 功能選單 =====");
-        System.out.println("1. 廣播");
+        System.out.println("1. 廣播訊息");
         System.out.println("2. 統計人數");
-        System.out.println("3. 請同學來找老師");
-        System.out.println("4. 留話給學員");
+        System.out.println("3. 尋找學員");
+        System.out.println("4. 留言給學員");
         System.out.println("5. 教室清場");
         System.out.println("q. 離開");
-        System.out.print("請選擇功能: ");
-        String target = "";
-        String content = "";
-        // 用輸入功能卡迴圈循環
-        String choice = scanner.nextLine().trim().toLowerCase();
-        switch (choice) {
-            case "1":
-                System.out.println("請輸入要廣播的訊息");
-                content = scanner.nextLine().trim();
-                doAction(new Message("broadcast", target, content));
-                break;
-            case "2":
-                doAction(new Message("count", target, content));
-                break;
-            case "3":
-                System.out.println("請輸入您要尋找的學員代號");
-                target = scanner.nextLine().trim().toLowerCase();
-                doAction(new Message("find", target, content));
-                break;
-            case "4":
-                System.out.println("請輸入學員代號");
-                target = scanner.nextLine().trim().toLowerCase();
-                System.out.println("請輸入您想傳達的訊息");
-                content = scanner.nextLine().trim();
-                doAction(new Message("memo", target, content));
-                break;
-            case "5":
-                doAction(new Message("clearroom", target, content));
-                break;
-            case "q":
-                doAction(new Message("quit", target, content));
-                break;
-            default:
-                System.out.println("無效的選擇，請重新輸入");
-        }
+        System.out.print("請選擇: ");
 
+        String choice = scanner.nextLine().trim().toLowerCase();
+        String target, content;
+
+        try {
+            switch (choice) {
+                case "1":
+                    System.out.print("請輸入廣播訊息: ");
+                    content = getNonEmptyInput(scanner);
+                    doAction(new Message("broadcast", "", content));
+                    break;
+                case "2":
+                    doAction(new Message("count", "", ""));
+                    break;
+                case "3":
+                    System.out.print("請輸入學員代號: ");
+                    target = getNonEmptyInput(scanner);
+                    doAction(new Message("find", target, ""));
+                    break;
+                case "4":
+                    System.out.print("請輸入學員代號: ");
+                    target = getNonEmptyInput(scanner);
+                    System.out.print("請輸入留言內容: ");
+                    content = getNonEmptyInput(scanner);
+                    doAction(new Message("memo", target, content));
+                    break;
+                case "5":
+                    doAction(new Message("clearroom", "", ""));
+                    break;
+                case "q":
+                    doAction(new Message("quit", "", ""));
+                    running = false;
+                    break;
+                default:
+                    System.out.println("無效選擇，請重新輸入");
+            }
+        } catch (Exception e) {
+            System.out.println("操作失敗: " + e.getMessage());
+        }
+    }
+
+    private static String getNonEmptyInput(Scanner scanner) {
+        String input;
+        while ((input = scanner.nextLine().trim()).isEmpty()) {
+            System.out.print("輸入不能為空，請重新輸入: ");
+        }
+        return input;
     }
 }
