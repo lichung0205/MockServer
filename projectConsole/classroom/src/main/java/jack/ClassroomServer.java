@@ -134,6 +134,7 @@ public class ClassroomServer {
                                 }
                                 showStr = getShowString(studentName, "已簽到");
                                 System.out.println(showStr);
+                                out.println(showStr);
                                 broadcastToTeachers(showStr);
                                 System.out.println("簽到成功");
                             }
@@ -143,24 +144,28 @@ public class ClassroomServer {
                         broadcastToTeachers(showStr);
                         updateActivity(id, translateAction(input));
                         System.out.println("在趴睡");
+                        out.println("在趴睡");
                     } else if (input.equalsIgnoreCase("TALKING")) {
                         showStr = getShowString(studentName, "在講話");
                         broadcastToTeachers(showStr);
                         updateActivity(id, translateAction(input));
                         System.out.println("在講話");
+                        out.println("在講話");
                     } else if (input.equalsIgnoreCase("REQUEST_DRINK")) {
                         showStr = getShowString(studentName, "在喝水");
                         System.out.println(showStr);
                         updateActivity(id, translateAction(input));
                         System.out.println(showStr);
+                        out.println(showStr);
                     } else if (input.equalsIgnoreCase("REQUEST_PHONE")) {
                         showStr = getShowString(studentName, "在滑手機");
                         System.out.println(showStr);
                         updateActivity(id, translateAction(input));
-                        System.out.println(showStr);
+                        out.println(showStr);
                     } else {
                         System.out.println(studentName + " 發送未知命令: " + input);
                         System.out.println("未知命令");
+                        out.println("未知命令");
                     }
                 }
             } catch (IOException e) {
@@ -199,7 +204,7 @@ public class ClassroomServer {
 
         public void sendMessage(String message) {
             if (out != null) {
-                System.out.println("老師說: " + message);
+                out.println("老師說: " + message);
             }
         }
 
@@ -267,15 +272,19 @@ public class ClassroomServer {
                                 student.sendMessage("[廣播] " + broadcastMsg);
                             }
                             System.out.println(name + "老師您的廣播訊息已發送給在場所有學生");
+                            out.println(name + "老師您的廣播訊息已發送給在場所有學生");
                             break;
                         case "count":
                             System.out.println("目前教室學生人數：" + students.size());
+                            out.println("目前教室學生人數：" + students.size());
                             for (StudentHandler student : students) {
                                 String key = "s_" + student.getId();
                                 Object obj = memoryCache.get(key);
                                 if (obj instanceof StudentInfo) {
                                     StudentInfo info = (StudentInfo) obj;
                                     System.out.println(String.format("%s %s [%s] [%s]", student.getId(), student.getName(),
+                                            info.isCheckedIn() ? "已簽到" : "未簽到", info.getLastActivity()));
+                                    out.println(String.format("%s %s [%s] [%s]", student.getId(), student.getName(),
                                             info.isCheckedIn() ? "已簽到" : "未簽到", info.getLastActivity()));
                                 }
                             }
@@ -297,6 +306,7 @@ public class ClassroomServer {
                             }
                             String json = new Gson().toJson(studentList);
                             System.out.println(json);
+                            out.println(json);
                             break;
                         case "find":
                             // String targetName = input.substring(5).trim();
@@ -306,8 +316,10 @@ public class ClassroomServer {
                                 // 你可以選擇發送訊息給該學生
                                 targetStudent.sendMessage(name + "老師點名你了！");
                                 System.out.println("已找到學生 " + targetName + " 並發送訊息");
+                                out.println("已找到學生 " + targetName + " 並發送訊息");
                             } else {
                                 System.out.println("找不到學生 " + targetName);
+                                out.println("找不到學生 " + targetName);
                             }
                             break;
                         case "memo":
@@ -316,8 +328,10 @@ public class ClassroomServer {
                                 // 你可以選擇發送訊息給該學生
                                 s.sendMessage(msg.getContent());
                                 System.out.println("已將訊息傳遞給學生 " + msg.getTarget());
+                                out.println("已將訊息傳遞給學生 " + msg.getTarget());
                             } else {
                                 System.out.println("找不到學生 " + msg.getTarget());
+                                out.println("找不到學生 " + msg.getTarget());
                             }
                             break;
                         case "clearroom":
@@ -331,8 +345,9 @@ public class ClassroomServer {
                                         String countdownMsg = "[倒數] 教室將於 " + i + " 秒後清場";
                                         for (StudentHandler student : students) {
                                             student.sendMessage(countdownMsg);
-                                            System.out.println(countdownMsg);
                                         }
+                                        System.out.println(countdownMsg);
+                                        out.println(countdownMsg);
                                         Thread.sleep(1000);
                                     }
                                     for (StudentHandler student : students) {
@@ -347,9 +362,11 @@ public class ClassroomServer {
                                 student.sendMessage("[廣播] 導師 已離開教室 ");
                             }
                             System.out.println("導師 已離開教室");
+                            out.println("導師 已離開教室");
                             break;
                         default:
                             System.out.println("未知指令");
+                            out.println("未知指令");
                     }
                 }
             } catch (IOException e) {
@@ -367,7 +384,7 @@ public class ClassroomServer {
 
         public void sendMessage(String message) {
             if (out != null) {
-                System.out.println(message);
+                out.println(message);
             }
         }
     }
