@@ -1,7 +1,11 @@
 package miller;
 
-import java.io.*; // 仍需保留，因為接收執行緒可能會用到短暫休眠來避免忙等
-import java.net.*;
+import java.io.BufferedReader; // 仍需保留，因為接收執行緒可能會用到短暫休眠來避免忙等
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
 import communication.LoginInfo;
@@ -9,19 +13,24 @@ import enums.AuthType;
 
 public class StudentClient implements Runnable {
 
-    private static final String SERVER_IP = "127.0.0.1";
-    private static final int SERVER_PORT = 9527;
+    private String serverIp = "127.0.0.1";
+    private int serverPort = 9527;
 
-    private String id;
-    private String name;
-    private String clientStudentName;
-    private int clientAttendanceStatus; // 0 代表未到, 1 代表簽到
-    private int clientActivityChoice; // 儲存活動選擇
+    private final String id;
+    private final String name;
+    private final String clientStudentName;
+    private final int clientAttendanceStatus; // 0 代表未到, 1 代表簽到
+    private final int clientActivityChoice; // 儲存活動選擇
 
     private Socket socket;
     private PrintWriter out;
     private BufferedReader in;
     private volatile boolean running = true; // 控制客戶端主執行緒的運行
+
+    public void setServerInfo(String ip, int port) {
+        this.serverIp = ip;
+        this.serverPort = port;
+    }
 
     // 建構子
     public StudentClient(String id, String name, int attendanceStatus, int activityChoice) {
@@ -60,8 +69,8 @@ public class StudentClient implements Runnable {
                     while (running && (serverMessage = in.readLine()) != null) {
                         System.out.println(clientStudentName + " 收到伺服器消息: " + serverMessage);
                         // 這裡可以根據伺服器消息來觸發動作，例如簽退指令
-                        if (serverMessage.trim().equalsIgnoreCase("QUIT_CLIENT") ||
-                                serverMessage.trim().equalsIgnoreCase("SERVER_CLOSE")) {
+                        if (serverMessage.trim().equalsIgnoreCase("QUIT_CLIENT")
+                                || serverMessage.trim().equalsIgnoreCase("SERVER_CLOSE")) {
                             System.out.println(clientStudentName + " 收到伺服器關閉指令，準備斷開。");
                             running = false; // 設置為 false，將導致主執行緒和接收執行緒停止
                             break; // 退出循環
@@ -102,10 +111,10 @@ public class StudentClient implements Runnable {
 
         // System.out.println(clientStudentName + " 嘗試連接伺服器...");
         try {
-            socket = new Socket(SERVER_IP, SERVER_PORT);
+            socket = new Socket(serverIp, serverPort);
             out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            System.out.println(clientStudentName + " 已連接到伺服器: " + SERVER_IP + ":" + SERVER_PORT);
+            System.out.println(clientStudentName + " 已連接到伺服器: " + serverIp + ":" + serverPort);
         } catch (IOException e) {
             System.err.println(clientStudentName + " 連接伺服器失敗: " + e.getMessage());
             running = false; // 連接失敗，停止運行
@@ -137,7 +146,7 @@ public class StudentClient implements Runnable {
     private void sendActivityChoiceToServer(int choice) {
         if (out != null) {
             String activityString = getActivityString(choice);
-            out.println( activityString);
+            out.println(activityString);
             System.out.println(clientStudentName + " 已發送活動選擇: " + activityString);
         } else {
             System.err.println(clientStudentName + " 輸出流未初始化，無法發送活動選擇。");

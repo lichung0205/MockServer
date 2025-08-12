@@ -1,15 +1,18 @@
 package jack;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -20,7 +23,8 @@ import communication.Message;
 import enums.AuthType;
 
 public class ClassroomServer {
-    private static final int PORT = 9527;
+
+    // private static final int PORT = 9527;
     private static ServerSocket serverSocket;
     private static final List<StudentHandler> students = new CopyOnWriteArrayList<>();
     private static final List<TeacherHandler> teachers = new CopyOnWriteArrayList<>();
@@ -28,8 +32,31 @@ public class ClassroomServer {
 
     public static void main(String[] args) {
         try {
-            serverSocket = new ServerSocket(PORT);
-            System.out.println("教室伺服器已啟動..");
+
+            Properties props = new Properties();
+
+            // 預設設定檔路徑（可以改成參數傳入）
+            String configPath = "./config/classroom.properties";
+
+            try (FileInputStream fis = new FileInputStream(configPath)) {
+                props.load(fis);
+            } catch (IOException e) {
+                System.err.println("讀取設定檔失敗：" + configPath + "錯誤：" + e.getMessage());
+                return;
+            }
+
+            // 讀取 server.port
+            String portStr = props.getProperty("server.port", "9527");
+            int port = Integer.parseInt(portStr);
+
+            // 讀取 server.gm 並轉小寫，方便比對
+            String gmListStr = props.getProperty("server.gm", "").toLowerCase();
+            List<String> allowedGms = Arrays.asList(gmListStr.split("\\s*,\\s*"));
+
+            // 測試輸出
+            System.out.println("允許的 GM 名稱: " + allowedGms);
+            serverSocket = new ServerSocket(port);
+            System.out.printf("教室伺服器 %s 已啟動..", portStr);
             // 如果需要，這邊可以設計 server 端的選單或教師功能
             while (true) {
                 Socket clientSocket = serverSocket.accept();
@@ -44,12 +71,18 @@ public class ClassroomServer {
                     StudentHandler handler = new StudentHandler(clientSocket, id, name);
                     students.add(handler);
                     String studentKey = "s_" + info.getId();
-                    if (!memoryCache.containsKey(studentKey))
+                    if (!memoryCache.containsKey(studentKey)) {
                         memoryCache.put(studentKey, new StudentInfo(handler)); // 加入 cache
+
+                    }
                     new Thread(handler).start();
                     System.out.printf("%s 號 %s 已進入教室\n", info.getId(), info.getName());
                 } // 導師登入 gmtools
                 else if (info.getAuthType().equals(AuthType.TEACHER)) {
+                    if (!allowedGms.contains(id)) {
+                        throw new RuntimeException(String.format("%s不是被允許的GM", id));
+                    }
+
                     TeacherHandler handler = new TeacherHandler(clientSocket, id, name);
                     teachers.add(handler);
                     out.println(String.format("%s 老師您已登入伺服器", name));
@@ -63,6 +96,7 @@ public class ClassroomServer {
     }
 
     public static class StudentInfo {
+
         private final StudentHandler handler;
         private boolean checkedIn;
         private String lastActivity = "尚無行為紀錄";
@@ -96,6 +130,7 @@ public class ClassroomServer {
 
     // 學生處理器
     static class StudentHandler implements Runnable {
+
         private final Socket socket;
         private final String id;
         private final String name;
@@ -210,9 +245,14 @@ public class ClassroomServer {
 
         public void forceDisconnect() {
             try {
-                if (out != null) out.println("QUIT:已離開教室");
-                if (socket != null) socket.close();
-            } catch (IOException e) {}
+                if (out != null) {
+                    out.println("QUIT:已離開教室");
+                }
+                if (socket != null) {
+                    socket.close();
+                }
+            } catch (IOException e) {
+            }
         }
 
         public String getId() {
@@ -237,6 +277,7 @@ public class ClassroomServer {
     // 導師處理器 (改用Message 傳送 接收)
     // static class TeacherHandlerNew implements Runnable {
     static class TeacherHandler implements Runnable {
+
         private final Socket socket;
         private PrintWriter out;
         private BufferedReader in;
@@ -354,7 +395,8 @@ public class ClassroomServer {
                                         student.forceDisconnect();
                                     }
                                     students.clear();
-                                } catch (InterruptedException ignored) {}
+                                } catch (InterruptedException ignored) {
+                                }
                             }).start();
                             break;
                         case "quit":

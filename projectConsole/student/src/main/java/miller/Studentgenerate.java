@@ -1,8 +1,13 @@
 package miller;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections; // 新增導入，用於隨機打亂列表
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.TimeUnit; // 新增導入，用於時間延遲
 
@@ -10,10 +15,11 @@ public class Studentgenerate {
 
     // Student 內部類別保持不變
     static class Student {
-        private String id;
-        private String name;
-        private int attendanceStatus; // 0 代表未到, 1 代表簽到
-        private int activityChoice; // 儲存簽到學生隨機選擇的活動狀態
+
+        private final String id;
+        private final String name;
+        private final int attendanceStatus; // 0 代表未到, 1 代表簽到
+        private final int activityChoice; // 儲存簽到學生隨機選擇的活動狀態
 
         public Student(String id) {
             this.id = id;
@@ -74,9 +80,29 @@ public class Studentgenerate {
     }
 
     public static void main(String[] args) {
-        List<Student> students = new ArrayList<>();
-        int numberOfStudents = 5; // 學生總數
 
+        Properties props = new Properties();
+
+        // 預設設定檔路徑（可以改成參數傳入）
+        String configPath = "./config/student.properties";
+
+        try (InputStreamReader reader = new InputStreamReader(
+                new FileInputStream(configPath), StandardCharsets.UTF_8)) {
+            props.load(reader);
+        } catch (IOException e) {
+            System.err.println("讀取設定檔失敗：" + configPath + "錯誤：" + e.getMessage());
+            return;
+        }
+
+        // 讀取 server.port
+        String serverip = props.getProperty("server.ip", "100.0.0.1");
+        String serverport = props.getProperty("server.port", "9527");
+        int port = Integer.parseInt(serverport);
+
+        String connectCnt = props.getProperty("connectCnt", "2");
+        int numberOfStudents = Integer.parseInt(connectCnt); // 學生總數
+
+        List<Student> students = new ArrayList<>();
         for (Integer i = 1; i <= numberOfStudents; i++) {
             Student student = new Student(i.toString());
             students.add(student);
@@ -102,6 +128,7 @@ public class Studentgenerate {
                     student.getName(),
                     student.getAttendanceStatus(),
                     student.getActivityChoice());
+            client.setServerInfo(serverip, port); // 設定連線資訊
             Thread clientThread = new Thread(client);
             // clientThreads.add(clientThread); // 暫時不需要收集執行緒
             clientThread.start();

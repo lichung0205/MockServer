@@ -1,15 +1,21 @@
 package neil;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.Properties;
+import java.util.Scanner;
+
 import communication.LoginInfo;
 import communication.Message;
 import enums.AuthType;
 
 public class GmToolsApp {
-    private static final String SERVER_IP = "127.0.0.1";
-    private static final int SERVER_PORT = 9527;
+
     private static Socket socket;
     private static PrintWriter out;
     private static BufferedReader in;
@@ -51,12 +57,36 @@ public class GmToolsApp {
     }
 
     private static void initializeConnection() throws IOException {
-        socket = new Socket(SERVER_IP, SERVER_PORT);
+
+        Properties props = new Properties();
+
+        // 預設設定檔路徑（可以改成參數傳入）
+        String configPath = "./config/teacher.properties";
+
+        try (InputStreamReader reader = new InputStreamReader(
+                new FileInputStream(configPath), StandardCharsets.UTF_8)) {
+            props.load(reader);
+        } catch (IOException e) {
+            System.err.println("讀取設定檔失敗：" + configPath + "錯誤：" + e.getMessage());
+            throw e;
+        }
+
+        // 讀取 server.port
+        String serverip = props.getProperty("server.ip", "100.0.0.1");
+        String serverport = props.getProperty("server.port", "9527");
+        int port = Integer.parseInt(serverport);
+
+        // 讀取 server.gm 並轉小寫，方便比對
+        String myid = props.getProperty("login.id", "jack");
+        String mynam = props.getProperty("login.name", "jack");
+
+        // 測試輸出
+        socket = new Socket(serverip, port);
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
         // 身份驗證
-        LoginInfo info = new LoginInfo(AuthType.TEACHER, "neil", "尼奧");
+        LoginInfo info = new LoginInfo(AuthType.TEACHER, myid, mynam);
         out.println(info.toJson());
         System.out.println("已連接至教室 (輸入 'q' 退出)");
     }
@@ -64,9 +94,15 @@ public class GmToolsApp {
     private static void closeConnection() {
         running = false;
         try {
-            if (out != null) out.close();
-            if (in != null) in.close();
-            if (socket != null) socket.close();
+            if (out != null) {
+                out.close();
+            }
+            if (in != null) {
+                in.close();
+            }
+            if (socket != null) {
+                socket.close();
+            }
         } catch (IOException e) {
             System.err.println("關閉連線時出錯: " + e.getMessage());
         }

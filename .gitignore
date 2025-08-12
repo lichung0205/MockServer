@@ -18,6 +18,8 @@ projectConsole/bin/
 projectConsole/out/
 projectConsole/build/
 projectConsole/target/
+projectConsole/**/dependency-reduced-pom.xml
+
 
 # IDE / 工具設定
 .vscode/*
