@@ -1,0 +1,12 @@
+{
+    "name": "ws-tcp-bridge",
+    "version": "1.0.0",
+    "main": "bridge.js",
+    "type": "commonjs",
+    "dependencies": {
+        "ws": "^8.18.0"
+    },
+    "scripts": {
+        "start": "node bridge.js"
+    }
+}

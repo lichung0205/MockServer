@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -60,9 +61,14 @@ public class ClassroomServer {
             // 如果需要，這邊可以設計 server 端的選單或教師功能
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                PrintWriter out = new PrintWriter(
+                        new OutputStreamWriter(clientSocket.getOutputStream(), java.nio.charset.StandardCharsets.UTF_8),
+                        true);
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(clientSocket.getInputStream(), java.nio.charset.StandardCharsets.UTF_8));
                 String loginData = in.readLine();
+
+                System.out.printf("server收到 %s\n", loginData);
                 LoginInfo info = LoginInfo.fromJson(loginData);
                 String id = info.getId();
                 String name = info.getName();
@@ -146,8 +152,11 @@ public class ClassroomServer {
         public void run() {
             String studentName = String.format("%s %s", id, name);
             try {
-                out = new PrintWriter(socket.getOutputStream(), true);
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out = new PrintWriter(
+                        new OutputStreamWriter(socket.getOutputStream(), java.nio.charset.StandardCharsets.UTF_8),
+                        true);
+                in = new BufferedReader(
+                        new InputStreamReader(socket.getInputStream(), java.nio.charset.StandardCharsets.UTF_8));
 
                 String showStr, input;
                 while ((input = in.readLine()) != null) {
@@ -297,8 +306,11 @@ public class ClassroomServer {
 
         public void run() {
             try {
-                out = new PrintWriter(socket.getOutputStream(), true);
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out = new PrintWriter(
+                        new OutputStreamWriter(socket.getOutputStream(), java.nio.charset.StandardCharsets.UTF_8),
+                        true);
+                in = new BufferedReader(
+                        new InputStreamReader(socket.getInputStream(), java.nio.charset.StandardCharsets.UTF_8));
                 String input;
                 while ((input = in.readLine()) != null) {
                     // 根據收到的請求做相對應的處理
@@ -323,8 +335,9 @@ public class ClassroomServer {
                                 Object obj = memoryCache.get(key);
                                 if (obj instanceof StudentInfo) {
                                     StudentInfo info = (StudentInfo) obj;
-                                    System.out.println(String.format("%s %s [%s] [%s]", student.getId(), student.getName(),
-                                            info.isCheckedIn() ? "已簽到" : "未簽到", info.getLastActivity()));
+                                    System.out.println(
+                                            String.format("%s %s [%s] [%s]", student.getId(), student.getName(),
+                                                    info.isCheckedIn() ? "已簽到" : "未簽到", info.getLastActivity()));
                                     out.println(String.format("%s %s [%s] [%s]", student.getId(), student.getName(),
                                             info.isCheckedIn() ? "已簽到" : "未簽到", info.getLastActivity()));
                                 }

@@ -64,6 +64,8 @@ gm-tools-web/*.tsbuildinfo
 gm-tools-web/coverage/
 gm-tools-web/.eslintcache
 
+gm-tools-web/src/bridge/node_modules/
+
 # 編譯輸出
 gm-tools-web/dist/
 gm-tools-web/build/

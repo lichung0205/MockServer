@@ -10,12 +10,13 @@ type Opts = {
     autoReconnect?: boolean;
 };
 
-export function useWs({ url, onOpen, onClose, onMessage, autoReconnect = true }: Opts) {
+export function useWs({ url, onOpen, onClose, onMessage, autoReconnect = false }: Opts) {
     const wsRef = useRef<WebSocket | null>(null);
     const [status, setStatus] = useState<'idle' | 'connecting' | 'open' | 'closed'>('idle');
     const retryRef = useRef(0);
     const stopRetryRef = useRef(false);
 
+    // 連線
     const connect = () => {
         stopRetryRef.current = false;
         if (wsRef.current && (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)) return;
@@ -41,13 +42,13 @@ export function useWs({ url, onOpen, onClose, onMessage, autoReconnect = true }:
         };
         ws.onerror = () => ws.close();
     };
-
+    // 斷線
     const disconnect = () => {
         stopRetryRef.current = true;
         wsRef.current?.close();
         wsRef.current = null;
     };
-
+    // 發封包
     const send = (data: any) => {
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
             wsRef.current.send(typeof data === 'string' ? data : JSON.stringify(data));

@@ -23,7 +23,16 @@ export default function LoginForm() {
     const nickErr = touched && !nickname.trim();
 
     return (
-        <Card sx={{ maxWidth: 420 }}>
+        <Card
+            sx={{
+                // width: 1024,
+                // width: '100%', // 強制全寬
+                // maxWidth: '90vw', // 確保在小螢幕上不會超出
+                borderRadius: 3,
+                boxShadow: 3,
+                margin: 'auto' // 額外保險
+            }}
+        >
             <CardContent>
                 <Typography variant="h6" gutterBottom>登入</Typography>
                 <Stack spacing={2}>

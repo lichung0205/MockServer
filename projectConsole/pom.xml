@@ -31,7 +31,8 @@
     </dependencyManagement>
 
     <properties>
-        <!-- 用 JDK 17 編譯，但產生 Java 8 相容 bytecode -->
+        <!-- 用 JDK 17以上 編譯，但產生 Java 8 相容 bytecode -->
+        <maven.compiler.release>8</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 

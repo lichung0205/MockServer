@@ -112,8 +112,11 @@ public class StudentClient implements Runnable {
         // System.out.println(clientStudentName + " 嘗試連接伺服器...");
         try {
             socket = new Socket(serverIp, serverPort);
-            out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(
+                    new OutputStreamWriter(socket.getOutputStream(), java.nio.charset.StandardCharsets.UTF_8),
+                    true);
+            in = new BufferedReader(
+                    new InputStreamReader(socket.getInputStream(), java.nio.charset.StandardCharsets.UTF_8));
             System.out.println(clientStudentName + " 已連接到伺服器: " + serverIp + ":" + serverPort);
         } catch (IOException e) {
             System.err.println(clientStudentName + " 連接伺服器失敗: " + e.getMessage());

@@ -3,7 +3,12 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, S
 import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 
-export default function CommentDialog({ open, onClose }: { open: boolean; onClose: () => void; }) {
+export default function CommentDialog({ open, onClose,
+    onSubmit // by 瓶仔
+}: {
+    open: boolean; onClose: () => void;
+    onSubmit: (id: string, text: string) => void; // by 瓶仔
+}) {
     const push = useAppStore(s => s.push);
     const [sid, setSid] = useState('');
     const [text, setText] = useState('');

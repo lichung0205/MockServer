@@ -16,6 +16,7 @@ export default function MessageLog() {
                     {messages.map((m, i) => (
                         <Box key={i} sx={{ fontFamily: 'monospace', fontSize: 14 }}>
                             {new Date(m.at).toLocaleTimeString()} —{' '}
+                            {m.type === 'server' && `${m.content ?? ''}`}{/* ← 新增：顯示 Server 回傳 */}
                             {m.type === 'broadcast' && `【廣播】${m.content}`}
                             {m.type === 'comment' && `【留言】(${m.studentId}) ${m.content}`}
                             {m.type === 'clear' && `【清場】${m.confirm ? '已執行' : '已取消'}`}

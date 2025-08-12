@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -40,7 +41,7 @@ public class GmToolsApp {
                     running = false;
                 }
             });
-            receiverThread.setDaemon(true);  // 設為守護執行緒，隨主執行緒退出
+            receiverThread.setDaemon(true); // 設為守護執行緒，隨主執行緒退出
             receiverThread.start();
 
             // 主循環處理用戶輸入
@@ -82,8 +83,11 @@ public class GmToolsApp {
 
         // 測試輸出
         socket = new Socket(serverip, port);
-        out = new PrintWriter(socket.getOutputStream(), true);
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        out = new PrintWriter(
+                new OutputStreamWriter(socket.getOutputStream(), java.nio.charset.StandardCharsets.UTF_8),
+                true);
+        in = new BufferedReader(
+                new InputStreamReader(socket.getInputStream(), java.nio.charset.StandardCharsets.UTF_8));
 
         // 身份驗證
         LoginInfo info = new LoginInfo(AuthType.TEACHER, myid, mynam);
@@ -119,7 +123,7 @@ public class GmToolsApp {
     private static void showMenu(Scanner scanner) {
         System.out.println("\n===== 功能選單 =====");
         System.out.println("1. 廣播訊息");
-        System.out.println("2. 統計人數");
+        System.out.println("2. 教室資訊");
         System.out.println("3. 尋找學員");
         System.out.println("4. 留言給學員");
         System.out.println("5. 教室清場");
